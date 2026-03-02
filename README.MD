@@ -64,7 +64,9 @@ Review the state-of-the-art in Super-Resolution techniques for medical imaging, 
 Prepare the retinal dataset for supervised Super-Resolution training.
 The dataset selected for developing de SRGAN model was a KAGGLE dataset "Aptos and Messidor eye images".
 Analosly, the distribution of the data is given by the following structure as shown in the image.
-![Data Pipeline Overview](docs\images\dataset_distribution.png)
+
+![Data Pipeline Overview](docs/images/dataset_distribution.png)
+
 **Activities:**
 - Dataset acquisition
 - Generation of HR/LR image pairs
