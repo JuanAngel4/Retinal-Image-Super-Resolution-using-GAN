@@ -58,10 +58,12 @@ Review the state-of-the-art in Super-Resolution techniques for medical imaging, 
 
 ---
 
-## Stage 2 — Dataset Preparation and Preprocessing
+## Stage 2 — Dataset Preparation and Preprocessinng
 
 **Objective:**  
 Prepare the retinal dataset for supervised Super-Resolution training.
+The dataset selected for developing de SRGAN model was a KAGGLE dataset "Aptos and Messidor eye images".
+Analosly, the distribution of the data is given by the following structure as shown in the image.
 
 **Activities:**
 - Dataset acquisition
@@ -74,9 +76,8 @@ Prepare the retinal dataset for supervised Super-Resolution training.
 - Structured dataset pipeline
 - Preprocessing scripts
 - Dataset statistics and distribution analysis
+---  
 
-**Documentation Log:**  
-(Describe dataset size, preprocessing pipeline, scaling factors, augmentation methods, and data partitioning.)
 
 ---
 
