@@ -1,0 +1,1 @@
+In this folder we can find the raw dataset and the processed data from the raw dataset, it is 16GB so is not in this github repo, but you can find the raw data at KAGGLE: https://www.kaggle.com/datasets/anikbhowmickae20b102/binary-classification-data-aptos-and-messidor
