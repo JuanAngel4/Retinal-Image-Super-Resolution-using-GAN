@@ -1,0 +1,127 @@
+% Before start, check the file README.txt
+\documentclass[10pt,a4paper,twocolumn,english]{article}
+\usepackage{sbsr}
+\usepackage{float}
+
+%%%% This file presents the global settings for the document in LaTeX %%%%
+%%%% (MORE INFORMATION IN README.txt) %%%%
+%%%  The paper information must be declared below as well as its authors and affiliations %%%%
+
+% analisis exploratorio de un conjunto de datos vis-nir para segmentacion y clasificacion de cobertura y uso del suelo mediante modelos de inteligencia artificial no supervisada 
+%agregar kmeans al titulo
+\title{Cross-Domain Spectral Compatibility and Unsupervised Land-Cover Classification of VIS-NIR UAV Imagery in Colombian Landscapes}
+
+\author{Juan Angel Gamez Diaz$^1$}
+
+\address{
+    Sebastián Carmona Estrada, Tutor, EAFIT University, School of Applied Sciences and Engineering, Medellín, Colombia – scarmonae@eafit.edu.co; 
+    Olga Lucía Quintero Montoya, Co-tutor, EAFIT University, School of Applied Sciences and Engineering, Medellín, Colombia –oquinte1@eafit.edu.co
+}
+
+%%%% Beginning of the document %%%%
+
+\begin{document}
+
+
+% create the title %%%% (DO NOT CHANGE) %%%%
+\twocolumn[
+\begin{@twocolumnfalse}
+\maketitle
+\end{@twocolumnfalse}
+]
+
+%en que aporta esto a los resultados.
+%%%% Add each section file %%%%
+%%%% (ALTER ONLY IF SECTIONS ARE INTRODUCED/REMOVED) %%%%
+
+\input{01_Abstract.tex}
+
+\input{02_Introduction.tex}
+
+\input{03_Material_and_methods.tex}
+	
+\input{04_Results.tex}
+	
+\input{05_Discussion.tex}
+	
+\input{06_Conclusions.tex}
+
+%%%% Create the references below (DO NOT CHANGE) 
+%%%% (MORE INFORMATION IN README.txt) %%%%
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% ATTENTION %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%% The file extra considerations (extra_considerations.tex) is not part of the template and must be removed from the final work. To do so, comment the line below %%%%
+\input{extra_considerations.tex} 
+\newpage
+\renewcommand{\refname}{REFERENCES}
+
+\begin{thebibliography}{99}
+
+\bibitem{1}
+D.~A. Chiran Taimal, ``Optimización del monitoreo ambiental mediante aplicaciones digitales en reforestaciones y restauraciones ecológicas en Cumbal, Colombia,'' 2024.
+
+
+\bibitem{2}
+C.~A. Pedraza Peñaloza, \textit{Novel methods and technologies to improve monitoring and understanding of land use land cover dynamics based on satellite Earth Observation: The case of forest monitoring in Colombia}, 2023.
+
+\bibitem{3}
+J.~A. Achicanoy, R. Rojas-Robles, and J.~E. Sánchez, ``Land cover vegetation analysis and projection through remote sensing and Geographic Information Systems in the Suba District, Bogotá-Colombia,'' \textit{Gestión y Ambiente}, vol.~21, no.~1, p.~41, 2018.
+
+\bibitem{4}
+M.~O. Chávez Can, \textit{Uso de imágenes de satélite de alta resolución espacial en la detección de cultivos agrícolas en el municipio de Patzicía, Chimaltenango}, Ph.D. dissertation, Univ. de San Carlos de Guatemala, Guatemala City, Guatemala, 2021.
+
+
+\bibitem{2012}
+S. Khorram, F. H. Koch, C. F. Van der Wiele, and S. A. Nelson, 
+\textit{Remote Sensing}. Springer Science \& Business Media, 2012.
+
+\bibitem{5}
+A.~Vijayakumar and S.~Vairavasundaram, 
+``YOLO-based object detection models: A review and its applications,'' 
+\textit{Multimedia Tools and Applications}, vol.~83, pp.~83535--83574, 2024. [Online]. Available: \url{https://doi.org/10.1007/s11042-024-18872-y}
+
+\bibitem{6}
+European Space Agency (ESA) y European Commission,
+``Copernicus Sentinel‑2: a multispectral high‑resolution land monitoring mission,'' 
+\textit{Copernicus Programme}, 2024. [En línea]. Disponible en: \url{https://sentinels.copernicus.eu/copernicus/sentinel-2}
+
+\bibitem{7}
+J.~D.~Lencinas y A.~Siebert, 
+``Relevamiento de bosques con información satelital: Resolución espacial y escala,'' 
+\textit{Quebracho - Revista de Ciencias Forestales}, vol.~17, no.~1-2, pp.~101--105, 2009.
+
+
+\bibitem{8}
+Instituto Geográfico Agustín Codazzi (IGAC), 
+``Observatorio de la Tierra y el Territorio,'' 
+\textit{IGAC}, 2024. [En línea]. Disponible en: \url{https://igacplanet.azurewebsites.net/}
+
+
+
+\bibitem{9}
+SIATA - Sistema de Alerta Temprana de Medellín y el Valle de Aburrá, 
+``Nosotros – ¿Qué es el SIATA?,'' 
+\textit{SIATA}, 2025. [En línea]. Disponible en: \url{https://siata.gov.co/sitio_web/index.php/nosotros}
+
+
+\bibitem{10}
+P.~S.~P. Reyes, A.~S.~V. Maholy, R.~P. Cabrera, R.~O.~S.~I. Verdezoto, B.~A.~C. Macías, and K.~M. Veliz, 
+``Determinación de la pérdida de cobertura vegetal en el Cantón Manta (Periodo 2000–2022) / Determination of the loss of plant coverage in the Manta Canton (Period 2000–2022),'' 
+\bibitem{11}
+M.~Reyes and I.~Lizarazo, 
+``Convolutional neural network-based semantic segmentation model for land cover classification in páramo ecosystems,'' 
+\textit{Revista de Teledetección}, no.~65, 2025. [Online]. Available: \url{https://doi.org/10.4995/raet.2025.21858}
+
+
+
+\textit{2024}.
+\bibitem{12}
+S. Razakarivony and F. Jurie, 
+``Vehicle detection in aerial imagery: A small target detection benchmark,'' 
+\textit{Journal of Visual Communication and Image Representation}, vol. 34, pp. 187--203, 2015.
+\bibitem{13}
+P. Ebel, A. Meraner, M. Schmitt, and X. X. Zhu, 
+``Multisensor data fusion for cloud removal in global and all-season Sentinel-2 imagery,'' 
+\textit{IEEE Transactions on Geoscience and Remote Sensing}, 2020.
+
+\end{document} % end of document %%%%(DO NOT CHANGE)%%%%

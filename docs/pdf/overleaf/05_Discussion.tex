@@ -1,0 +1,43 @@
+\section{Discussion}
+\label{sec:discussion}
+
+\subsection{Key Findings}
+
+$\times$2 models exceed 35\,dB PSNR across all scenarios.
+This indicates moderate SR (256$\times$256 $\rightarrow$ 512$\times$512) is well-posed for retinal fundus images.
+Regular vascular structure and optic disc geometry provide strong spatial priors.
+
+Scenario B (bilinear) consistently outperforms A and C.
+Bilinear's 4-pixel averaging kernel minimizes aliasing in the LR domain.
+The network learns a simpler mapping function.
+This suggests smoother downsampling is preferable for reconstruction fidelity over edge-preserving methods in retinal SR.
+
+LPIPS reveals a complementary pattern.
+Scenario C achieves competitive perceptual quality at $\times$4 and $\times$8 despite lower PSNR.
+Deep feature similarity is less sensitive to the degradation model than to scale factor~\cite{zhang2018}.
+
+\subsection{Limitations}
+
+Full adversarial SRGAN training (generator + discriminator + perceptual loss) could not complete on the available GPU (4\,GB VRAM).
+Reported results correspond to a generator trained with L1 loss only.
+Full SRGAN training is ongoing and will be reported upon completion.
+
+ResNet50 ordinal regression achieves 73.56\% accuracy and QWK = 0.8764 on five-class DR grading.
+This outperforms VGG16 by +9.13\%.
+Ordinal regression captures the ordered nature of DR severity better than categorical cross-entropy~\cite{he2016}.
+Binary DR detection is excellent (96.83\% accuracy, 95.86\% sensitivity).
+Fine-grained severity discrimination remains challenging for minority classes.
+Super-resolution alone cannot resolve all grading ambiguities, especially for early-stage microaneurysms.
+
+This study does not include clinical validation with human experts.
+PSNR, SSIM, and LPIPS are objective but do not measure clinical utility.
+A reader study with ophthalmologists is needed to validate diagnostic impact.
+
+\subsection{Comparison with Prior Work}
+
+The 9-scenario framework extends prior retinal SR studies by varying both degradation and scale within a unified design.
+Most prior work evaluates a single pipeline, preventing cross-study comparison~\cite{zhang2020}.
+Our matrix provides a reproducible benchmark for future retinal SR research.
+
+ResNet50 results align with Gulshan et al.~\cite{gulshan2016}: deep models detect referable DR well (96.83\% binary accuracy) but struggle with severity grading.
+Ordinal regression improves five-class accuracy over VGG16 from 64.43\% to 73.56\%.

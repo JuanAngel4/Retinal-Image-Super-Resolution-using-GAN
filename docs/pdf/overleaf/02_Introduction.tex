@@ -1,0 +1,27 @@
+\section{Introduction}
+
+Diabetic retinopathy (DR) is a leading cause of preventable blindness~\cite{gulshan2016}.
+Early screening reduces severe vision loss risk, but high-resolution fundus cameras remain unaffordable in low-resource settings~\cite{haque2017}.
+Low-cost imaging alternatives produce degraded images with limited diagnostic value~\cite{willemink2020}.
+
+Deep learning-based super-resolution (SR) can recover high-frequency details from low-resolution inputs~\cite{zhang2020}.
+Generative adversarial networks (GANs)~\cite{goodfellow2014} achieve photorealistic upsampling through adversarial training.
+The SRGAN architecture~\cite{ledig2017} combines perceptual, adversarial, and pixel-wise losses for high-quality reconstruction.
+ESRGAN~\cite{wang2018} further improves visual quality through residual-in-residual dense blocks.
+
+Despite these advances, three gaps persist.
+First, public fundus datasets are collected with high-end cameras and do not represent low-cost acquisition~\cite{willemink2020}.
+Second, existing retinal SR studies evaluate single degradation models, preventing systematic comparison.
+Third, the impact of SR on downstream DR classification remains underexplored within unified frameworks.
+
+This work addresses these gaps with four contributions.
+First, a 9-scenario experimental design spanning three interpolation methods, two noise types, and three scale factors.
+Second, a complete SRGAN implementation with two-phase training and perceptual loss.
+Third, quantitative evaluation with PSNR, SSIM, and LPIPS across all scenarios.
+Fourth, a VGG16 DR classifier on super-resolved images for end-to-end assessment.
+
+The paper is organized as follows.
+Section~\ref{sec:methods} describes the dataset, degradation pipeline, and architecture.
+Section~\ref{sec:results} presents quantitative and qualitative results.
+Section~\ref{sec:discussion} interprets the findings.
+Section~\ref{sec:conclusions} concludes and outlines future work.

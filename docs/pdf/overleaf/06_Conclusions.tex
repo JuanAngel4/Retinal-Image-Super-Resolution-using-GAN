@@ -1,0 +1,24 @@
+\section{Conclusions}
+\label{sec:conclusions}
+
+This paper presented a systematic SRGAN framework for retinal fundus super-resolution across 9 degradation scenarios.
+
+Key findings:
+\begin{itemize}
+    \item $\times$2 SR achieves PSNR $>$ 35\,dB and SSIM $>$ 0.92, effectively compensating for moderate resolution loss.
+    \item Bilinear degradation (Scenario B) yields the highest metrics across all scales.
+    \item Scale factor dominates reconstruction difficulty: $\times$8 models reach only $\sim$27\,dB PSNR.
+    \item ResNet50 ordinal regression achieves 73.56\% accuracy and QWK = 0.8764 on five-class DR grading.
+    \item Binary DR detection reaches 96.83\% accuracy, 95.86\% sensitivity, and 97.79\% specificity.
+\end{itemize}
+
+Future work includes:
+\begin{itemize}
+    \item Completion of full adversarial SRGAN training with the complete loss function (Eq.~\ref{eq:loss}).
+    \item Attention mechanisms for fine-detail recovery at high scale factors.
+    \item Class-balanced training and data augmentation for minority DR grades.
+    \item Lightweight architectures (e.g., MobileNet) for deployment on portable fundus cameras.
+    \item Clinical reader studies to validate diagnostic utility of SR-enhanced images.
+\end{itemize}
+
+Code, models, and configuration files: \url{https://github.com/JuanGamez99/ProyectoAvanzado2}.

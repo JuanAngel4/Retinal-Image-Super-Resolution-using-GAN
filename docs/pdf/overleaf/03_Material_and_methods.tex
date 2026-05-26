@@ -1,0 +1,131 @@
+\section{Materials and Methods}
+\label{sec:methods}
+
+\subsection{Dataset}
+
+The dataset combines APTOS 2019 and Messidor-2 retinal fundus collections.
+All images are preprocessed into a unified high-resolution reference set (\textbf{M3}) of 3,578 RGB photographs at 512$\times$512 pixels.
+The set is split into training (70\%), validation (15\%), and test (15\%) subsets.
+DR severity spans five clinical grades: none (0), mild (1), moderate (2), severe (3), and proliferative (4)~\cite{gulshan2016}.
+Degradations are applied on-the-fly during training, eliminating disk storage of multiple copies and ensuring reproducibility through fixed seeds.
+
+\subsection{Degradation Pipeline}
+
+The pipeline simulates low-cost camera image formation.
+It follows the physically motivated order~\cite{ledig2017}:
+
+\begin{equation}
+\mathbf{I}_{\text{LR}} = \left( \mathbf{I}_{\text{HR}} * k_\sigma \right) \downarrow_s + n
+\label{eq:degradation}
+\end{equation}
+
+where $k_\sigma$ is a Gaussian blur kernel, $\downarrow_s$ is downsampling by scale $s$, and $n$ is noise.
+The order models: lens optics (blur) $\rightarrow$ sensor discretization (downsample) $\rightarrow$ electronics (noise).
+
+Three scenarios are defined (Table~\ref{tab:experiments}).
+Scenario A (bicubic, $\sigma=1.0$, $\sigma_n=5$) is the academic baseline.
+Scenario B (bilinear, $\sigma=1.5$, $\sigma_n=10$) simulates mid-range portable cameras.
+Scenario C (Lanczos, $\sigma=2.0$, Poisson) models extreme low-light acquisition.
+
+\begin{table}[H]
+\centering
+\caption{Experimental configuration matrix.}
+\label{tab:experiments}
+\footnotesize
+\renewcommand{\arraystretch}{1.0}
+\begin{tabular}{@{}cllllc@{}}
+\toprule
+\textbf{Model} & \textbf{Downsample} & \textbf{Blur $\sigma$} & \textbf{Noise} & \textbf{Scale} & \textbf{LR size} \\
+\midrule
+M1 & Bicubic    & 1.0 & Gaussian $\sigma_n=5$  & $\times$2 & 256$\times$256 \\
+M2 & Bicubic    & 1.0 & Gaussian $\sigma_n=5$  & $\times$4 & 128$\times$128 \\
+M3 & Bicubic    & 1.0 & Gaussian $\sigma_n=5$  & $\times$8 & 64$\times$64 \\
+\midrule
+M4 & Bilinear   & 1.5 & Gaussian $\sigma_n=10$ & $\times$2 & 256$\times$256 \\
+M5 & Bilinear   & 1.5 & Gaussian $\sigma_n=10$ & $\times$4 & 128$\times$128 \\
+M6 & Bilinear   & 1.5 & Gaussian $\sigma_n=10$ & $\times$8 & 64$\times$64 \\
+\midrule
+M7 & Lanczos    & 2.0 & Poisson                & $\times$2 & 256$\times$256 \\
+M8 & Lanczos    & 2.0 & Poisson                & $\times$4 & 128$\times$128 \\
+M9 & Lanczos    & 2.0 & Poisson                & $\times$8 & 64$\times$64 \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+Each combination yields one trained model (9 total).
+\begin{figure}[H]
+\centering
+\includegraphics[width=\columnwidth]{degradation_grid.png}
+\caption{Visual degradation across all scenarios at $\times$2. HR (512px) $\rightarrow$ LR (256px) through each pipeline.}
+\label{fig:degradation}
+\end{figure}
+
+\subsection{Generator Architecture}
+
+The generator $G$ is a deep residual network (SRResNet)~\cite{ledig2017}.
+It maps LR input $\mathbf{I}_{\text{LR}}$ to SR output $\mathbf{I}_{\text{SR}}$.
+The network begins with a 9$\times$9 convolution (64 channels) and PReLU activation.
+\textbf{16 residual blocks} follow, each with two 3$\times$3 convolutions, batch normalization, and PReLU, connected via local skip connections.
+A post-residual 3$\times$3 convolution with batch normalization adds a global skip connection from the head~\cite{he2016}.
+The upsampling module uses $N = \log_2(s)$ PixelShuffle blocks~\cite{shi2016}.
+Each block applies a 3$\times$3 convolution (4$\times$ channel expansion), sub-pixel shuffle, and PReLU.
+A final 9$\times$9 convolution with $\tanh$ produces the 3-channel output.
+PixelShuffle avoids checkerboard artifacts common to transposed convolutions~\cite{shi2016}.
+
+\subsection{Discriminator Architecture}
+
+The discriminator $D$ classifies images as real HR or generated SR.
+It follows a VGG-style~\cite{simonyan2015} design with eight convolutional blocks.
+Each block contains a 3$\times$3 convolution, batch normalization (except the first), and LeakyReLU ($\alpha=0.2$).
+Strided convolutions ($s=2$) halve spatial dimensions every two blocks while doubling channels: 64 $\rightarrow$ 128 $\rightarrow$ 256 $\rightarrow$ 512.
+The final feature map is flattened and passed through two fully connected layers (1024 $\rightarrow$ 1) with sigmoid output.
+
+\subsection{Loss Functions}
+
+The generator is optimized with a composite loss:
+
+\begin{equation}
+\mathcal{L}_G = \lambda_{\text{content}} \mathcal{L}_{\text{VGG}} + \lambda_{\text{adv}} \mathcal{L}_{\text{adv}} + \lambda_{\text{pixel}} \mathcal{L}_{\text{pixel}}
+\label{eq:loss}
+\end{equation}
+
+where $\lambda_{\text{content}} = 1.0$, $\lambda_{\text{adv}} = 1 \times 10^{-3}$, and $\lambda_{\text{pixel}} = 1 \times 10^{-2}$~\cite{ledig2017}.
+The three terms are:
+
+\textbf{Perceptual loss} $\mathcal{L}_{\text{VGG}}$: MSE between VGG-19~\cite{simonyan2015} ReLU3\_3 activations of $\mathbf{I}_{\text{SR}}$ and $\mathbf{I}_{\text{HR}}$.
+This measures semantic similarity, not pixel error~\cite{johnson2016}.
+
+\textbf{Adversarial loss} $\mathcal{L}_{\text{adv}}$: binary cross-entropy where $G$ maximizes $D(G(\mathbf{I}_{\text{LR}}))$ to fool the discriminator~\cite{goodfellow2014}.
+
+\textbf{Pixel loss} $\mathcal{L}_{\text{pixel}}$: L1 distance between $\mathbf{I}_{\text{SR}}$ and $\mathbf{I}_{\text{HR}}$, providing structural stability.
+
+The discriminator is trained independently with binary cross-entropy:
+
+\begin{equation}
+\mathcal{L}_D = -\mathbb{E}\left[\log D(\mathbf{I}_{\text{HR}})\right] - \mathbb{E}\left[\log\left(1 - D(G(\mathbf{I}_{\text{LR}}))\right)\right]
+\label{eq:disc_loss}
+\end{equation}
+
+\subsection{Training Protocol}
+
+Training has two phases.
+\textbf{Phase 1 (pre-training)}: the generator trains alone with L1 loss for TBD epochs using Adam~\cite{kingma2014} at $10^{-4}$ learning rate.
+This initializes weights in a stable configuration before adversarial training.
+
+\textbf{Phase 2 (full GAN)}: discriminator and generator update alternately for TBD epochs.
+The discriminator learns to distinguish real HR from generated SR.
+The generator uses the full loss (Eq.~\ref{eq:loss}).
+Learning rate halves at the training midpoint~\cite{ledig2017}.
+
+Hardware: NVIDIA GeForce GTX 1650 (4\,GB VRAM), PyTorch 2.1.0, CUDA 11.8.
+Batch size: 16.
+
+\subsection{DR Classification}
+
+A ResNet50~\cite{he2016} pre-trained on ImageNet is adapted for ordinal regression.
+The classifier head is replaced by a single neuron with MSE loss, discretized to five classes via OptimizedRounder threshold optimization.
+Gradual unfreezing proceeds in three phases: head only (10 epochs, LR=$10^{-3}$), layer4 + head (20 epochs, LR=$10^{-4}$), and full fine-tune (30 epochs, LR=$10^{-5}$).
+Batch size: 16. Input size: 224$\times$224.
+OptimizedRounder~\cite{kingma2014} finds the four class boundaries that maximize QWK on the validation set.
+Primary metric: Quadratic Weighted Kappa (QWK).
+Secondary metrics: accuracy, precision, recall, sensitivity, specificity.

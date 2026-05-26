@@ -48,8 +48,11 @@ This project leverages **Generative Adversarial Networks (GANs)** to computation
 ### Key Contributions
 
 - **SRGAN-based super-resolution** for retinal fundus images across 9 degradation scenarios (3 degradation levels × 3 scale factors)
-- **Best SR performance:** PSNR **37.43 dB**, SSIM **0.944** at ×2 magnification
+- **Full adversarial SRGAN (srgan-full)** with WeightNorm Generator + SpectralNorm Discriminator + Perceptual/Adversarial/Edge losses for perceptually optimized reconstruction
+- **Diagnostic preservation evaluation** — validates whether SR images preserve clinical information using ResNet50 ordinal and VGG16 classifiers
+- **Best SR performance (baseline):** PSNR **37.43 dB**, SSIM **0.944** at ×2 magnification
 - **Transfer learning classifier** achieving **64.43% accuracy** on 5-class diabetic retinopathy grading
+- **Training resume system** — `training_progress.json` prevents wasted compute on interrupted runs
 - **Comprehensive degradation pipeline** simulating real-world camera optics (blur → downsample → noise)
 - **Full documentation** of methodology, results, and future work
 
@@ -133,6 +136,53 @@ nn.Sequential(
 
 **Loss:** L1 only | **Optimizer:** Adam (lr=1×10⁻⁴) | **Epochs:** 3 | **Batch size:** 4
 
+#### Full Adversarial SRGAN (srgan-full)
+
+Full GAN training with generator, discriminator, perceptual loss, and adversarial training for perceptually optimized super-resolution.
+
+**Architecture:**
+
+| Component | Type | Details | Parameters (×4) |
+|-----------|------|---------|:----------------:|
+| **Generator** | SRResNet (4 ResBlocks) | WeightNorm, PixelShuffle upsampling, Tanh output, global skip connection | ~0.66M |
+| **Discriminator** | VGG-style (7 blocks) | SpectralNorm, LeakyReLU(0.2), AdaptiveAvgPool2d(1) — input-size agnostic | ~2.1M |
+| **Perceptual Loss** | VGG-19 (relu3_3) | Frozen ImageNet weights, interpolates LR → 224px | — |
+| **Adversarial Loss** | BCEWithLogits | Label smoothing 0.9/0.1 for stable GAN training | — |
+| **Edge Loss** | Sobel gradients | L1 on edge maps — preserves high-frequency details | — |
+
+```
+Generator:
+  Head:    Conv2d(3, 64, 9) → PReLU
+  Body:    4× [Conv2d(64,64,3) → PReLU → Conv2d(64,64,3)]  (WeightNorm + skip)
+  Upsample: [Conv2d(64, 256, 3) → PixelShuffle(2) → PReLU] × log₂(scale)
+  Tail:    Conv2d(64, 3, 9) → Tanh
+
+Discriminator:
+  7× [SpectralNorm(Conv2d) → LeakyReLU(0.2)]  (channels: 64→64→128→128→256→256→256)
+  AdaptiveAvgPool2d(1) → Linear(256, 1024) → LeakyReLU(0.2) → Linear(1024, 1)
+```
+
+**Training optimizations (GTX 1650 4GB):**
+
+| Technique | Benefit |
+|-----------|---------|
+| AMP (Mixed Precision) | 2-3× faster training, -40% VRAM |
+| Batch size 4 + 96px patches | Fits 4GB VRAM |
+| OneCycleLR | Converges in ~3-5 epochs |
+| Multi-scale random crops | Forces spatial robustness |
+| GAN training resume | `training_progress.json` skips completed models |
+
+**Stability fixes for GAN convergence:**
+
+| Fix | Problem | Solution |
+|-----|---------|----------|
+| NaN protection | NaN from exploding gradients → corrupted weights | `torch.nan_to_num` on forward/gradients/losses + `clip_grad_norm` |
+| BatchNorm removal | BatchNorm with batch=4 creates unstable gradients for GAN | SpectralNorm only in discriminator |
+| Noise injection | Discriminator overfits to subtle generator artifacts | `x + randn_like(x) × 0.05` in D forward during training |
+| D update interval | Discriminator dominates generator | D updated every 4 G steps (instead of every 2) |
+| ×2 capacity | Generator too weak for ×2 adversarial training | 8 ResBlocks for ×2 models (vs 4 for ×4/×8) |
+| D channel reduction | 10:1 parameter imbalance D:G | Max D channels reduced from 512→256 (~2:1 ratio) |
+
 ### Classification (VGG16)
 
 A VGG16 pre-trained on ImageNet was adapted for DR severity grading:
@@ -162,11 +212,43 @@ Classifier: Linear(25088, 4096) → ReLU → Dropout(0.5)
 
 [Full experimental design details →](docs/technical/experimental-design.md)
 
+### Diagnostic Preservation Evaluation
+
+Evaluates whether SRGAN super-resolved images preserve diagnostic information for Diabetic Retinopathy grading by comparing classifier performance on original HR vs SR-reconstructed images.
+
+**Pipeline:**
+```
+Original HR → Degrade (blur+downsample+noise) → SRGAN Generator → SR image
+                                                                        ↓
+Original HR ──────────────────────────────────────────────────────→ Classifier (×2)
+                                                                      ├─ ResNet50 ordinal (QWK=0.8764)
+                                                                      └─ VGG16 CE (Acc=64.43%)
+```
+
+**Models evaluated:**
+- **srgan2, srgan31, srgan32** — 27 baseline SR models (3-layer Conv + PixelShuffle)
+- **srgan-full** — 9 full adversarial SR models (pending training completion)
+
+**Metrics:**
+- Quadratic Weighted Kappa (QWK) — primary metric (ordinal DR grading)
+- Accuracy, Precision/Recall/F1, Sensitivity, Specificity
+
+**Classifier pipelines:**
+
+| Classifier | Preprocessing | Training | Baseline Performance |
+|-----------|--------------|----------|:--------------------:|
+| **ResNet50 ordinal** | Random crop 224 + contrast + ImageNet norm | Ordinal regression with QWK-optimized thresholds | QWK **0.8764** |
+| **VGG16 CE** | Resize 224 + ToTensor + ImageNet norm | Cross-entropy with frozen features | Acc **64.43%** |
+
+**Status:** Notebook created (inference-only, `notebooks/evaluation/diagnostic-preservation.ipynb`). Execution blocked until srgan-full training checkpoint are available. srgan2/srgan31/srgan32 checkpoints are ready for immediate evaluation.
+
 ---
 
 ## Key Results
 
-### SRGAN Performance
+### SRGAN Performance (srgan2 Baseline)
+
+Results from the simplified SRGAN (srgan2 — L1 loss only, 3-layer generator).
 
 | Model | PSNR (dB) ↑ | SSIM ↑ | LPIPS ↓ | Best For |
 |:-----:|:----------:|:------:|:-------:|----------|
@@ -184,6 +266,39 @@ Classifier: Linear(25088, 4096) → ReLU → Dropout(0.5)
 - ×2 models achieve **excellent** reconstruction (avg PSNR > 35 dB, SSIM > 0.92)
 - ×4 models achieve **good** reconstruction (avg PSNR > 30 dB, SSIM > 0.80)
 - Scenario B (Bilinear) **consistently outperforms** Bicubic and Lanczos — smoother LR inputs are easier to reconstruct
+
+### SRGAN-ft (srgan-full) Performance
+
+*Results pending — training in progress.* Full adversarial training (Generator + Discriminator + Perceptual Loss) across 9 models.
+
+**Preliminary observations (epoch 1 of 3):**
+
+| Model | Scale | Scenario | PSNR (dB) | LPIPS | Status |
+|:-----:|:-----:|:--------:|:---------:|:-----:|--------|
+| M1 | ×2 | A | 3.63 | NaN | ❌ Collapsed — D_real=1.0 fixed; retraining with 8 ResBlocks + noise injection + D@256ch |
+| M2 | ×4 | A | 22.67 | 0.517 | ✅ Training stable (interrupted before completion) |
+| M3 | ×8 | A | — | — | ⏳ Pending |
+| M4 | ×2 | B | — | — | ❌ Same ×2 collapse as M1; retraining with fixes |
+| M5 | ×4 | B | — | — | ⏳ Pending |
+| M6 | ×8 | B | — | — | ⏳ Pending |
+| M7 | ×2 | C | — | — | ❌ Same ×2 collapse as M1; retraining with fixes |
+| M8 | ×4 | C | — | — | ⏳ Pending |
+| M9 | ×8 | C | — | — | ⏳ Pending |
+
+**Expected trade-off:** srgan-full sacrifices pixel accuracy (lower PSNR than srgan2) in exchange for **significantly lower LPIPS** (better perceptual quality) — the core benefit of adversarial super-resolution.
+
+### Diagnostic Preservation Results
+
+*Results pending — requires valid srgan-full checkpoints.*
+
+| Model Family | Models | ResNet50 QWK | VGG16 Acc | Diagnosis Preserved? |
+|:------------:|:------:|:------------:|:---------:|:--------------------:|
+| srgan2 (×2) | 3 | ⏳ Pending | ⏳ Pending | — |
+| srgan2 (×4) | 3 | ⏳ Pending | ⏳ Pending | — |
+| srgan2 (×8) | 3 | ⏳ Pending | ⏳ Pending | — |
+| srgan-full | 9 | ⏳ Pending | ⏳ Pending | — |
+
+**Methodology:** For each model, HR test images are degraded, super-resolved, then classified. QWK/Acc difference between HR (baseline) and SR indicates diagnostic preservation. A small or zero drop confirms that SR images retain clinical utility.
 
 ### Classification Performance
 
@@ -207,6 +322,10 @@ ProyectoAvanzado2/
 ├── CONTEXT.md                       ← Domain glossary for AI agents
 │
 ├── notebooks/                       ← Jupyter notebooks (all experiments)
+│   ├── srgan/                       → SRGAN training notebooks
+│   │   └── srgan-full.ipynb         → Full adversarial SRGAN (9 models, GAN training)
+│   ├── evaluation/                  → Evaluation notebooks
+│   │   └── diagnostic-preservation.ipynb → DR classifier comparison (HR vs SR)
 │   ├── data_exploration.ipynb       → Dataset exploration
 │   ├── model_desing.ipynb           → Architecture design decisions
 │   ├── model_preparation.ipynb      → Data cleaning and preprocessing
@@ -215,7 +334,7 @@ ProyectoAvanzado2/
 │   ├── Transfer_learnig_prediction_DL_model.ipynb → VGG16 classification
 │   └── models/                      → Trained model weights (.pth)
 │       ├── classification/          → VGG16 classifiers
-│       └── Super-resolution/        → SRGAN variants (srgan2, srgan31, srgan32)
+│       └── Super-resolution/        → SRGAN variants (srgan2, srgan31, srgan32, srgan-full)
 │
 ├── scripts/                         ← Utility Python modules
 │   ├── useful_functions.py          → CSV/image processing utilities
@@ -292,10 +411,25 @@ jupyter notebook notebooks/
 ```
 
 Key notebooks:
-- **`srgan2.ipynb`** — Train/evaluate SRGAN models (9 configurations)
-- **`SRGAN_model_implementation.ipynb`** — Full SRGAN architecture
+- **`notebooks/srgan/srgan-full.ipynb`** — Full adversarial SRGAN training (9 models, GAN + Perceptual Loss)
+- **`notebooks/evaluation/diagnostic-preservation.ipynb`** — DR classifier comparison (inference-only, evaluates diagnostic preservation)
+- **`srgan2.ipynb`** — Simplified SRGAN training (9 models, L1 loss)
+- **`SRGAN_model_implementation.ipynb`** — Full SRGAN architecture baseline
 - **`Transfer_learnig_prediction_DL_model.ipynb`** — VGG16 classification
 - **`model_preparation.ipynb`** — Dataset preparation pipeline
+
+#### Training Resume
+
+srgan-full includes an automatic training resume system. When re-running the training cell after interruption:
+
+1. `training_progress.json` is checked for previously completed models
+2. Completed models are skipped automatically
+3. Training resumes from the first incomplete model
+
+To force a full retrain, delete the progress file:
+```powershell
+Remove-Item "models/Super-resolution/srgan-full/checkpoints/training_progress.json"
+```
 
 ### Inference (from notebooks)
 
@@ -316,8 +450,10 @@ sr_image = model(lr_image.unsqueeze(0))
 | 1 | Literature Review & Problem Definition | ✅ Complete |
 | 2 | Dataset Preparation & Preprocessing | ✅ Complete |
 | 3 | Baseline Model Implementation (SRGAN) | ✅ Complete |
-| 4 | Model Training & Optimization | ✅ Complete |
-| 5 | Quantitative & Qualitative Evaluation | ✅ Complete |
+| 4a | Simplified SRGAN Training (srgan2) — 9 models, L1 loss | ✅ Complete |
+| 4b | Full Adversarial SRGAN Training (srgan-full) — GAN + perceptual loss | 🔄 In Progress (×2 collapse fix applied, retraining) |
+| 5a | Quantitative Evaluation (srgan2) — PSNR, SSIM, LPIPS | ✅ Complete |
+| 5b | Diagnostic Preservation Evaluation — classifier comparison | ⏳ Blocked (waiting srgan-full checkpoints) |
 | 6 | System Integration & Scalability | ⏳ Pending |
 | 7 | Final Analysis & Future Work | ⏳ Pending |
 
@@ -340,6 +476,7 @@ Each project stage is documented in detail:
 **Technical references:**
 - [Experimental Design](docs/technical/experimental-design.md) — 9-model matrix
 - [Results](docs/technical/results.md) — Full metrics tables
+- [GAN Stability Fixes](./docs/adr/gan-stability-fixes.md) — BatchNorm removal, noise injection, NaN protection rationale
 
 ---
 

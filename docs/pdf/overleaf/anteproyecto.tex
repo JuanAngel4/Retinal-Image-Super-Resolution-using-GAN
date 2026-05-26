@@ -1,0 +1,282 @@
+\documentclass[12pt,letterpaper]{article}     % Tipo de documento y otras especificaciones
+\usepackage[utf8]{inputenc}                   % Para escribir tildes y eñes
+\usepackage{pifont} % Para el símbolo de checkmark
+\usepackage[english]{babel}                   % Para que los títulos de figuras, tablas y otros estén en español
+\addto\captionsspanish{\renewcommand{\tablename}{Tabla}}					% Cambiar nombre a tablas
+\addto\captionsspanish{\renewcommand{\listtablename}{Índice de tablas}}		% Cambiar nombre a lista de tablas
+\usepackage{geometry}                         
+\geometry{left=18mm,right=18mm,top=21mm,bottom=21mm} % Tamaño del área de escritura de la página
+\usepackage{ucs}
+\usepackage{amsmath}      % Los paquetes ams son desarrollados por la American Mathematical Society
+\usepackage{amsfonts}     % y mejoran la escritura de fórmulas y símbolos matemáticos.
+\usepackage{amssymb}
+\usepackage{graphicx}     % Para insertar gráficas
+\usepackage[lofdepth,lotdepth]{subfig}	% Para colocar varias figuras
+\usepackage{unitsdef}	  % Para la presentación correcta de unidades
+\usepackage{pdfpages}   %incluir paginas de pdf externo, para los anexos
+\usepackage{appendix}   %para los anexos
+\renewcommand{\unitvaluesep}{\hspace*{4pt}}	% Redimensionamiento del espacio entre magnitud y unidad
+\usepackage[colorlinks=true,urlcolor=blue,linkcolor=black,citecolor=black]{hyperref}     % Para insertar hipervínculos y marcadores
+\usepackage{float}		% Para ubicar las tablas y figuras justo después del texto
+\usepackage{booktabs}	% Para hacer tablas más estilizadas
+\batchmode
+\bibliographystyle{plain} 
+\pagestyle{plain} 
+\pagenumbering{arabic}
+\usepackage{lastpage}
+\usepackage{fancyhdr}	% Para manejar los encabezados y pies de página
+\pagestyle{fancy}	% Contenido de los encabezados y pies de pagina
+%PORTADA EMPIEZA AQUI
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\lhead{DF0281 - Advanced  proyect II}
+\chead{}
+\rhead{Medical Image Super-Resolution from Low-Quality Data}	% Aquí va el numero de experimento, al igual que en el titulo
+\lfoot{Applied sciences and engineering school}
+\cfoot{\thepage\ de \pageref{LastPage}}
+\rfoot{EAFIT University}
+
+
+\author{\small{Author:}\\Juan Ángel Gámez Díaz \\
+\\ \small{ Tutor:}\\ 
+\\Raul Andres Castañeda Quintero | racastaneq@eafit.edu.co
+\\ 
+\vspace*{2.1in}}
+\title{EAFIT University
+\\{\small \\\vspace*{0.55in} :}\\ Medical Image Super-Resolution from Low-Quality Data Using a Conditional SRGAN \vspace*{1.3in}}
+%\date{}  				
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%PORTADA TERMINA AQUI%%%%%
+%%%%%%%%%%%%%%%%
+\begin{document}	% Inicio del documento
+%%%%%%%%%%%%%%%%
+
+\pdfbookmark[1]{Portada}{portada} 	% Marcador para el título
+
+\maketitle							% Título
+{\centering School of Applied Sciences and Engineering\\Physics Engineering bachelor's degree\\DF0281 – Advanced proyect II\\2025-2\par}
+
+
+\newpage
+\tableofcontents
+\newpage
+%%%%%%%%%%%%%%%%%%%---pla.d.P EMPIEZAN AQUI---%%%%%%%%%%%%%%%%%%%%%%
+
+% Introducción:
+
+
+
+\section{Problem Statement}
+
+Early detection of chronic diseases remains a critical challenge in modern healthcare, as timely diagnosis can significantly improve patient outcomes and reduce long-term treatment costs \cite{earlydetection}. In this context, medical imaging plays a fundamental role by enabling non-invasive data acquisition for automated diagnostic and monitoring systems \cite{noninvasive}.\\
+
+\noindent High-quality medical image acquisition typically depends on advanced and expensive imaging systems, which limits their availability in low-resource environments and large-scale screening scenarios \cite{3}. As a consequence, preventive diagnostic solutions are often constrained by the feasibility of deploying such specialized hardware \cite{zhang}.\\
+
+\noindent Recent advances in artificial intelligence and computer vision have demonstrated that computational reconstruction techniques can partially compensate for acquisition limitations, improving image quality and analytical usability from data acquired with simplified or low-cost imaging systems \cite{QUINTA}. However, most public medical imaging datasets are collected under controlled conditions using high-resolution acquisition devices, making them poorly representative of images obtained under realistic, resource-constrained settings \cite{ML}.\\
+
+\noindent Acquisition conditions limits the development and deployment of automated medical image analysis systems in low-resource environments. Therefore, there is a need for deep learning–based image reconstruction methodologies that enable the recovery of clinically relevant information from degraded medical images, while achieving quantitative and qualitative performance comparable to high-quality public datasets \cite{radiology}.
+
+\noindent However, recent learning-based reconstruction approaches—particularly those relying on generative models—may introduce visually plausible but clinically inaccurate structures, posing a risk for downstream automated analysis and interpretation. As a result, an additional challenge lies in mitigating the risk of hallucinations and preserving clinically relevant information through the incorporation of consistency constraints with the acquisition process and rigorous quantitative evaluation. Addressing these limitations defines the core problem tackled in this project.\\
+
+
+\noindent \textbf{Research question:} How can deep learning–based reconstruction methods enhance the quality of degraded medical images while preserving clinically meaningful structures and minimizing the introduction of non-physiological or false information for automated analysis?
+
+
+
+
+
+%%%%%%%%%%%%%%%%%%%---pla.d.P termina AQUI---%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%---OBJETIVOS EMPIEZAN AQUI---%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%
+\section{Objectives}
+
+\subsection{General Objective}
+To develop and evaluate a SRGAN model image reconstruction approach for degraded medical images, with the aim of recovering visually and structurally relevant information for automated analysis from low-quality data.
+
+\subsection{Specific Objectives}
+\begin{itemize}
+    \item To define a high-quality medical imaging reference that supports the objective evaluation of reconstruction performance under controlled degradation conditions.
+    
+    \item To investigate the feasibility of combining adversarial learning-based superresolution approaches (SRGAN) and zero-shot methods, in order to improve the resolution of degraded medical images, mitigating the introduction of untrue information constraints through consistency and quantitative evaluation.
+    
+    \item To evaluate the capability of deep learning–based reconstruction models, such as U-Net or conditional SRGAN, Zero-Shot problems, to recover image quality and clinically relevant features from degraded medical images using quantitative and qualitative criteria.
+\end{itemize}
+
+
+
+%%%%%%%%%%%%%%%---AQUI TERMINA OBJETIVOS---%%%%%%%%%%%%%%%%%%%%%%
+
+%%%%%%%%%%%%%%%%%%%%%%
+
+\section{Related Work}
+
+\noindent Recent advances in deep learning have enabled substantial progress in medical image analysis, reconstruction, and enhancement. Neural network–based approaches have demonstrated strong capabilities in extracting relevant structural information and supporting automated analysis across multiple medical imaging modalities \cite{ML, zhang}.\\
+
+\noindent The integration of artificial intelligence into medical imaging workflows has led to increasingly automated analysis systems, whose reliability strongly depends on the quality of the input data \cite{noninvasive, radiology}. Consequently, image quality remains a critical factor for the robustness and generalization of automated medical image analysis models.\\
+
+\noindent Public medical imaging datasets are predominantly acquired using high-end imaging systems under controlled conditions. While suitable for model development under ideal scenarios, such datasets are poorly representative of images obtained using simplified or low-cost acquisition systems. Previous studies have shown that dataset characteristics and preprocessing strategies significantly influence model performance and generalization \cite{QUINTA}.\\
+
+\noindent In parallel, the high cost and limited availability of advanced medical imaging equipment restrict access in low-resource environments, motivating the exploration of computational alternatives to hardware-based solutions \cite{3}. Although deep learning–based reconstruction methods have shown promising results in enhancing degraded medical images \cite{zhang}, limited attention has been given to the systematic simulation of low-quality acquisition conditions and their reconstruction within a unified evaluation framework.
+
+
+
+
+
+%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%inicio justificacion%%%%%%%%%%%%
+
+\section{Motivation}
+
+\noindent Access to medical imaging technologies remains constrained by the cost and complexity of high-resolution acquisition systems, particularly in low-resource and large-scale screening settings \cite{3}. As a result, simpler and affordable imaging devices are often preferred, despite producing images with limited resolution and degraded quality that restrict their diagnostic utility \cite{QUINTA}.\\
+
+\noindent Recent advances in deep learning have demonstrated that image reconstruction and enhancement techniques can partially compensate for acquisition limitations through computational means, enabling the recovery of clinically relevant information from degraded data \cite{zhang, ML}. However, most existing approaches are trained and evaluated using high-quality datasets that do not reflect the characteristics of images obtained from simplified optical systems \cite{QUINTA}.\\
+
+\noindent This project is motivated by the need to systematically study the degradation and reconstruction of medical images, enabling deep learning models to bridge the gap between low-cost image acquisition and the quality requirements of automated medical analysis \cite{earlydetection}. By addressing this challenge, the proposed approach seeks to reduce reliance on expensive hardware while supporting the development of accessible, scalable, and cost-effective medical imaging solutions.
+
+%%%%%%%%%%%%%%inicio alcance%%%%%%%%%%%%%%%%%
+\section{Scope}
+
+\noindent This project focuses on the computational enhancement and reconstruction of medical images using deep learning techniques. The scope is limited to the use of publicly available high-quality medical imaging datasets, which are systematically degraded to simulate acquisition conditions associated with simple and low-resolution imaging systems.\\
+
+\noindent The proposed work includes dataset selection, controlled image degradation, model training, and quantitative evaluation of reconstruction performance using established image quality metrics. The study is restricted to offline processing and retrospective data analysis, without involving real-time acquisition, hardware design, or clinical deployment.\\
+
+\noindent The scope of this project does not include clinical validation, diagnostic decision-making, or patient-level outcome assessment. Instead, the emphasis is placed on evaluating the ability of deep learning models to recover image quality and structural information comparable to that of high-quality reference datasets, supporting their potential applicability in accessible medical imaging scenarios.\\
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%inicio met.prop%%%%%%%%%%%%%
+\section{Proposed Methodology}
+
+\noindent The proposed methodology follows a fully computational and data-driven pipeline designed to evaluate deep learning–based reconstruction under low-resolution medical imaging conditions. The approach enables controlled experimentation using public datasets, avoiding dependence on physical imaging hardware while ensuring reproducibility and methodological rigor.\\
+
+\noindent The process begins with the selection and characterization of high-quality public medical imaging datasets, which serve as reference data. Statistical and structural image properties are analyzed to establish a baseline for evaluating information loss and reconstruction performance under degraded acquisition conditions.\\
+
+\noindent Subsequently, controlled degradation models are applied to the reference images in order to simulate low-resolution and low-quality acquisition scenarios representative of simplified or low-cost imaging systems. These degradations are designed to reflect practical resolution constraints while preserving essential anatomical structures.\\
+
+\noindent A deep learning–based reconstruction model, such as a U-Net or conditional GAN, is then trained to recover image quality from the degraded inputs. The reconstructed images are quantitatively and qualitatively evaluated against the high-quality reference data using established image reconstruction metrics.\\
+
+\noindent The methodology concludes with an analysis of reconstruction performance across different degradation levels, assessing the capability of the proposed approach to bridge the gap between low-quality acquisition and the quality requirements of automated medical image analysis.
+
+
+
+
+\section{Project Timeline}
+A seven-stage project timeline is proposed, as shown in Table~1, reflecting the sequential and iterative nature of the proposed computational methodology.
+
+\begin{table}[H]
+\centering
+\scriptsize
+\renewcommand{\arraystretch}{1.2}
+\begin{tabular}{|p{5.4cm}|*{15}{c|}}
+\hline
+\textbf{Stage} 
+& \textbf{4} & \textbf{5} & \textbf{6} & \textbf{7} & \textbf{8} & \textbf{9} & \textbf{10} & \textbf{11} & \textbf{12} & \textbf{13} & \textbf{14} & \textbf{15} & \textbf{16} & \textbf{17} & \textbf{18} \\
+\hline
+State-of-the-art review on deep learning--based medical image reconstruction
+& $c$ & $c$ & $c$ & $c$ & $c$ & $c$ & $c$ & $c$ & $c$ & \checkmark &  &  &  &  &  \\
+\hline
+High-quality medical dataset selection and reference characterization
+&  &  & $c$ & $c$ & $c$ & $c$ &  &  &  &  &  &  &  &  &  \\
+\hline
+Controlled image degradation modeling and preprocessing
+&  &  &  & $c$ & $c$ & $c$ & $c$ &  &  &  &  &  &  &  &  \\
+\hline
+Deep learning--based image reconstruction model development and training
+&  &  &  &  &  & $c$ & $c$ & $c$ & \checkmark &  &  &  &  &  &  \\
+\hline
+Quantitative and qualitative evaluation of reconstruction performance
+&  &  &  &  &  &  &  &  & $c$ & $c$ & \checkmark & \checkmark &  &  &  \\
+\hline
+Results interpretation and technical documentation
+&  &  &  &  &  &  &  &  &  & \checkmark & \checkmark & \checkmark & \checkmark &  &  \\
+\hline
+Final report submission and oral presentation
+&  &  &  &  &  &  &  &  &  &  &  &  &  & \checkmark & \checkmark \\
+\hline
+\end{tabular}
+\caption{Project timeline distributed by weeks.}
+\end{table}
+
+
+
+\section{Budget}
+An estimated budget is presented below in order to provide a realistic overview of the resources involved in the development of the project. The values shown correspond to equivalent costs and do not necessarily represent direct financial expenses.
+\begin{table}[H]
+\centering
+\scriptsize
+\renewcommand{\arraystretch}{1.2}
+\begin{tabular}{|p{3.8cm}|p{3.8cm}|c|c|c|}
+\hline
+\textbf{Name / Resource} & \textbf{Role / Description} & \textbf{Hours} & \textbf{Rate / Value (USD)} & \textbf{Total (USD)} \\
+\hline
+Academic Advisor (PhD) & Main advisor & 16 & 60 & 960 \\
+\hline
+Juan Ángel Gámez Díaz & Principal researcher and developer & 240 & 30 & 7\,200 \\
+\hline
+Personal computer & Local computing for development and preliminary experiments & --- & 1\,200 & 1\,200 \\
+\hline
+Apolo supercomputing cluster & High-performance computing for model training and experimentation & 100 & 40 & 4\,000 \\
+\hline
+Public datasets & Data curation, preprocessing and management (tasks) & --- & 500 & 500 \\
+\hline
+Software and tools & Development frameworks, libraries, IDEs and equivalent software ( & --- & 400 & 400 \\
+\hline
+\multicolumn{4}{|r|}{\textbf{Total}} & \textbf{14\,260} \\
+\hline
+\end{tabular}
+\caption{Estimated budget for the development of the proposed project.}
+\end{table}
+
+
+
+
+
+%%%%%%%%%%%%%%%%
+\section{Intellectual Property}
+
+This project is governed by the Intellectual Property Regulations of Universidad EAFIT. The rights to the results obtained will be shared among the University, the student as the author and principal executor of the work, and the academic advisor Raúl Andrés Castañeda Quintero, in recognition of his contribution to the guidance and co-design of the project. 
+
+
+
+%%%%%%%%%%%%%%
+% Bibliografía
+%%%%%%%%%%%%%%
+\newpage
+\begin{thebibliography}{99}
+
+\bibitem{earlydetection}
+D. Deyo, J. Hemingway, and D. R. Hughes, “Identifying patients with undiagnosed chronic conditions: An examination of patient costs before chronic disease diagnosis,” \textit{Journal of the American College of Radiology}, vol. 12, no. 12, pp. 1388–1394, 2015.
+\bibitem{noninvasive}P. J. Slomka, D. Dey, A. Sitek, M. Motwani, D. S. Berman, and G. Germano, “Cardiac imaging: Working towards fully automated machine analysis and interpretation,” \textit{Expert Review of Medical Devices}, vol. 14, no. 3, pp. 197–212, 2017.
+\bibitem{3}M. I. Haque, “Price of imaging tests and access of patients to modern health care facilities across the developing and better-off countries: A comparative study,” \textit{Daffodil International University Journal of Allied Health Sciences}, 2017.
+\bibitem{zhang}H. M. Zhang and B. Dong, “A review on deep learning in medical image reconstruction,” \textit{Journal of the Operations Research Society of China}, vol. 8, no. 2, pp. 311–340, 2020.
+\bibitem{QUINTA}M. J. Willemink, W. A. Koszek, C. Hardell, J. Wu, D. Fleischmann, H. Harvey, \emph{et al.}, “Preparing medical imaging data for machine learning,” \textit{Radiology}, vol. 295, no. 1, pp. 4–15, 2020.
+\bibitem{ML}M. Kim, J. Yun, Y. Cho, K. Shin, R. Jang, H. J. Bae, and N. Kim, “Deep learning in medical imaging,” \emph{Neurospine}, vol. 16, no. 4, pp. 657–668, 2019.
+\bibitem{radiology}M. Barnett, D. Wang, H. Beadnall, A. Bischof, D. Brunacci, H. Butzkueven, *et al*., 
+“A real-world clinical validation for AI-based MRI monitoring in multiple sclerosis,” 
+NPJ Digital Medicine, vol. 6, no. 1, p. 196, 2023.
+
+
+
+
+
+
+\end{thebibliography}
+
+
+
+\newpage
+
+%%%%%%%%%%%%%%
+% Anexos
+%%%%%%%%%%%%%%
+\end{document}
+\appendix
+% \newpage  % Salto de página antes de la línea de firma
+\vspace*{\fill}  % Espacio flexible para empujar la línea de firma al final de la página
+\begin{flushright}
+    \rule{10cm}{0.4pt} \\  % Línea de firma
+    Raul Andres Castañeda Quintero \\
+    Tutor
+\end{flushright}
+\vspace{2cm}  % Espacio debajo de la línea de firma
+\textbf{}
+
+\end{document}
+%%%%%%%%%%%%%%

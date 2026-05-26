@@ -1,0 +1,15 @@
+\begin{abstract}
+
+    Diabetic retinopathy screening is limited by costly fundus imaging equipment.
+    Super-resolution offers a computational path to recover image quality from low-cost sensors.
+    This work presents an SRGAN framework for retinal fundus enhancement under realistic degradation.
+    Nine degradation scenarios are defined: three downsampling methods (bicubic, bilinear, Lanczos), two noise models (Gaussian, Poisson), and three scale factors ($\times$2, $\times$4, $\times$8).
+    The pipeline follows a camera-motivated order: blur $\rightarrow$ downsample $\rightarrow$ noise.
+    The generator uses a 16-block SRResNet with PixelShuffle upsampling.
+    Training proceeds in two phases: L1 pre-training followed by full adversarial optimization with perceptual (VGG-19), adversarial, and pixel-wise losses.
+    A VGG16 classifier is trained on super-resolved images for DR severity grading.
+    Best results reach 37.43\,dB PSNR, 0.944 SSIM, and 0.043 LPIPS at $\times$2 scale.
+    Scenario B (bilinear) outperforms bicubic and Lanczos across all metrics.
+    The framework provides a reproducible benchmark for retinal SR under controlled degradation.
+
+\end{abstract}
